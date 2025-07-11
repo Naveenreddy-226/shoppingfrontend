@@ -5,15 +5,28 @@ const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
   const navigate = useNavigate();
 
+  const getCartKey = () => {
+    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+    return userInfo ? `cartItems_${userInfo._id}` : null;
+  };
+
   useEffect(() => {
-    const storedItems = JSON.parse(localStorage.getItem('cartItems')) || [];
-    setCartItems(storedItems);
+    const key = getCartKey();
+    if (key) {
+      const storedItems = JSON.parse(localStorage.getItem(key)) || [];
+      setCartItems(storedItems);
+    } else {
+      setCartItems([]);
+    }
   }, []);
 
   const removeFromCart = (id) => {
     const updatedCart = cartItems.filter((item) => item.product !== id);
     setCartItems(updatedCart);
-    localStorage.setItem('cartItems', JSON.stringify(updatedCart));
+    const key = getCartKey();
+    if (key) {
+      localStorage.setItem(key, JSON.stringify(updatedCart));
+    }
   };
 
   const checkoutHandler = () => {
