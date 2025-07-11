@@ -17,14 +17,40 @@ const ProductDetails = () => {
   }, [id]);
 
   const addToCartHandler = () => {
-    const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+
+    if (!userInfo) {
+      alert('Please log in to add items to the cart.');
+      navigate('/login');
+      return;
+    }
+
+    // Sanitize email for localStorage key (replace '.' and '@' with '_')
+    const userEmailKey = userInfo.email.replace(/[.@]/g, '_');
+    const cartKey = `cartItems_${userEmailKey}`;
+
+    // Retrieve cart items or default to empty array
+    const cartItems = JSON.parse(localStorage.getItem(cartKey)) || [];
+
+    // Check if product already in cart
     const existing = cartItems.find((item) => item.product === product._id);
+
     if (existing) {
       existing.qty += qty;
     } else {
-      cartItems.push({ product: product._id, name: product.name, image: product.image, price: product.price, qty });
+      cartItems.push({
+        product: product._id,
+        name: product.name,
+        image: product.image,
+        price: product.price,
+        qty,
+      });
     }
-    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+
+    // Save back to localStorage under user-specific cart key
+    localStorage.setItem(cartKey, JSON.stringify(cartItems));
+
+    // Navigate to Cart page
     navigate('/cart');
   };
 

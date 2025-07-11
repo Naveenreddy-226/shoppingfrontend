@@ -5,28 +5,28 @@ const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
   const navigate = useNavigate();
 
-  const getCartKey = () => {
-    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-    return userInfo ? `cartItems_${userInfo._id}` : null;
-  };
-
   useEffect(() => {
-    const key = getCartKey();
-    if (key) {
-      const storedItems = JSON.parse(localStorage.getItem(key)) || [];
-      setCartItems(storedItems);
-    } else {
+    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+    if (!userInfo) {
       setCartItems([]);
+      return;
     }
+    const userEmailKey = userInfo.email.replace(/[.@]/g, '_');
+    const cartKey = `cartItems_${userEmailKey}`;
+    const storedItems = JSON.parse(localStorage.getItem(cartKey)) || [];
+    setCartItems(storedItems);
   }, []);
 
   const removeFromCart = (id) => {
+    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+    if (!userInfo) return;
+
+    const userEmailKey = userInfo.email.replace(/[.@]/g, '_');
+    const cartKey = `cartItems_${userEmailKey}`;
+
     const updatedCart = cartItems.filter((item) => item.product !== id);
     setCartItems(updatedCart);
-    const key = getCartKey();
-    if (key) {
-      localStorage.setItem(key, JSON.stringify(updatedCart));
-    }
+    localStorage.setItem(cartKey, JSON.stringify(updatedCart));
   };
 
   const checkoutHandler = () => {
@@ -34,7 +34,6 @@ const Cart = () => {
     if (!userInfo) {
       navigate('/login');
     } else {
-      // Redirect to place order page or directly place order
       alert('Checkout flow not implemented yet.');
     }
   };
