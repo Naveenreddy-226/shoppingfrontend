@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { loadStripe } from '@stripe/stripe-js';
+import styles from './Cart.module.css';
+
+const stripePromise = loadStripe(import.meta.env.STRIPE_PUBLIC_KEY); // use your test publishable key
 
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -29,12 +33,29 @@ const Cart = () => {
     localStorage.setItem(cartKey, JSON.stringify(updatedCart));
   };
 
-  const checkoutHandler = () => {
-    const userInfo = localStorage.getItem('userInfo');
+  const checkoutHandler = async () => {
+    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
     if (!userInfo) {
       navigate('/login');
+      return;
+    }
+
+    const stripe = await stripePromise;
+
+    const response = await fetch('https://shoppingbackend-ivrt.onrender.com/create-checkout-session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ items: cartItems }),
+    });
+
+    const data = await response.json();
+
+    if (data.id) {
+      await stripe.redirectToCheckout({ sessionId: data.id });
     } else {
-      alert('Checkout flow not implemented yet.');
+      alert('Failed to initiate checkout');
     }
   };
 
@@ -42,27 +63,31 @@ const Cart = () => {
 
   if (cartItems.length === 0)
     return (
-      <div>
+      <div className={styles.emptyCart}>
         Cart is empty <Link to="/">Go Back</Link>
       </div>
     );
 
   return (
-    <div>
+    <div className={styles.cartContainer}>
       {cartItems.map((item) => (
-        <div key={item.product} style={{ display: 'flex', marginBottom: 10 }}>
-          <img src={item.image} alt={item.name} style={{ width: 80, marginRight: 10 }} />
-          <div style={{ flex: 1 }}>
+        <div key={item.product} className={styles.cartItem}>
+          <img src={item.image} alt={item.name} className={styles.itemImage} />
+          <div className={styles.itemDetails}>
             <Link to={`/product/${item.product}`}>{item.name}</Link>
             <p>
               {item.qty} x ${item.price.toFixed(2)} = ${(item.qty * item.price).toFixed(2)}
             </p>
           </div>
-          <button onClick={() => removeFromCart(item.product)}>Remove</button>
+          <button onClick={() => removeFromCart(item.product)} className={styles.removeBtn}>
+            Remove
+          </button>
         </div>
       ))}
-      <h3>Total: ${totalPrice.toFixed(2)}</h3>
-      <button onClick={checkoutHandler}>Proceed to Checkout</button>
+      <h3 className={styles.totalPrice}>Total: ${totalPrice.toFixed(2)}</h3>
+      <button onClick={checkoutHandler} className={styles.checkoutBtn}>
+        Pay with Stripe
+      </button>
     </div>
   );
 };
