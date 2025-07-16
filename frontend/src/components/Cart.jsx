@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { loadStripe } from '@stripe/stripe-js';
 import styles from './Cart.module.css';
-
-const stripePromise = loadStripe(import.meta.env.STRIPE_PUBLIC_KEY); // use your test publishable key
 
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -33,29 +30,12 @@ const Cart = () => {
     localStorage.setItem(cartKey, JSON.stringify(updatedCart));
   };
 
-  const checkoutHandler = async () => {
-    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+  const checkoutHandler = () => {
+    const userInfo = localStorage.getItem('userInfo');
     if (!userInfo) {
       navigate('/login');
-      return;
-    }
-
-    const stripe = await stripePromise;
-
-    const response = await fetch('https://shoppingbackend-ivrt.onrender.com/create-checkout-session', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ items: cartItems }),
-    });
-
-    const data = await response.json();
-
-    if (data.id) {
-      await stripe.redirectToCheckout({ sessionId: data.id });
     } else {
-      alert('Failed to initiate checkout');
+      alert('Checkout flow not implemented yet.');
     }
   };
 
@@ -86,7 +66,7 @@ const Cart = () => {
       ))}
       <h3 className={styles.totalPrice}>Total: ${totalPrice.toFixed(2)}</h3>
       <button onClick={checkoutHandler} className={styles.checkoutBtn}>
-        Pay with Stripe
+        Proceed to Checkout
       </button>
     </div>
   );
