@@ -8,6 +8,7 @@ import Login from './components/Login';
 import Register from './components/Register';
 import Order from './components/Order';
 import Footer from './components/Footer';
+import Success from './Success';
 
 const App = () => {
   return (
@@ -22,6 +23,7 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/order/:id" element={<Order />} />
+          <Route path="/success" element={<Success />} />
         </Routes>
       </main>
       <Footer />
