@@ -7,6 +7,7 @@ import Cart from './components/Cart';
 import Login from './components/Login';
 import Register from './components/Register';
 import Order from './components/Order';
+import Footer from './components/Footer';
 
 const App = () => {
   return (
@@ -23,6 +24,7 @@ const App = () => {
           <Route path="/order/:id" element={<Order />} />
         </Routes>
       </main>
+      <Footer />
     </Router>
   );
 };
