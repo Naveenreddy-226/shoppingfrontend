@@ -14,6 +14,7 @@ const Login = () => {
     try {
       const { data } = await API.post('/auth/login', { email, password });
       localStorage.setItem('userInfo', JSON.stringify(data));
+      console.log(data)
       navigate('/');
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid credentials');
