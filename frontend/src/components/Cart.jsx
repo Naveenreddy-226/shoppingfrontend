@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { loadStripe } from '@stripe/stripe-js';
 import styles from './Cart.module.css';
+
+const stripePromise = loadStripe('pk_test_51RlVZRPIoDMmW2tUCfePSg7Vtmll3KLWzlF3UfCuPqSTtEkYqqfxpumwR3vYTLGbbXO8kJ5bDFwFsrUtI8LUCEBC00enWAfC27'); // use your test publishable key
+
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
   const navigate = useNavigate();
@@ -29,12 +33,29 @@ const Cart = () => {
     localStorage.setItem(cartKey, JSON.stringify(updatedCart));
   };
 
-  const checkoutHandler = () => {
-    const userInfo = localStorage.getItem('userInfo');
+  const checkoutHandler = async () => {
+    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
     if (!userInfo) {
       navigate('/login');
+      return;
+    }
+
+    const stripe = await stripePromise;
+
+    const response = await fetch('https://shoppingbackend-ivrt.onrender.com/create-checkout-session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ items: cartItems }),
+    });
+
+    const data = await response.json();
+
+    if (data.id) {
+      await stripe.redirectToCheckout({ sessionId: data.id });
     } else {
-      alert('Checkout flow not implemented yet.');
+      alert('Failed to initiate checkout');
     }
   };
 
@@ -65,7 +86,7 @@ const Cart = () => {
       ))}
       <h3 className={styles.totalPrice}>Total: ${totalPrice.toFixed(2)}</h3>
       <button onClick={checkoutHandler} className={styles.checkoutBtn}>
-        Proceed to Checkout
+        Pay with Stripe
       </button>
     </div>
   );
