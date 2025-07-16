@@ -1,42 +1,75 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import './Header.css'; // CSS file for styling
 
 const Header = () => {
   const navigate = useNavigate();
   const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+
+  const [searchInput, setSearchInput] = useState('');
 
   const logoutHandler = () => {
     localStorage.removeItem('userInfo');
     navigate('/login');
   };
 
+  const handleSearch = () => {
+    if (searchInput.trim()) {
+      navigate(`/?search=${encodeURIComponent(searchInput.trim())}`);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
   return (
-    <header style={{ padding: '10px 20px', backgroundColor: '#222', color: '#fff' }}>
-      <nav style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Link to="/" style={{ color: '#fff', textDecoration: 'none', fontWeight: 'bold' }}>
+    <header className="flipkart-header">
+      <div className="header-left">
+        <Link to="/" className="logo">
           MERN Shop
         </Link>
-        <div>
-          <Link to="/cart" style={{ color: '#fff', marginRight: 20 }}>
-            Cart
-          </Link>
-          {userInfo ? (
-            <>
-              <span style={{ marginRight: 20 }}>Hi, {userInfo.name}</span>
-              <button onClick={logoutHandler}>Logout</button>
-            </>
-          ) : (
-            <>
-              <Link to="/login" style={{ color: '#fff', marginRight: 10 }}>
-                Login
-              </Link>
-              <Link to="/register" style={{ color: '#fff' }}>
-                Register
-              </Link>
-            </>
-          )}
-        </div>
-      </nav>
+      </div>
+
+      {/* Search bar in the middle */}
+      <div className="header-search">
+        <input
+          type="text"
+          placeholder="Search products..."
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          onKeyDown={handleKeyPress}
+          className="search-input-header"
+        />
+        <button onClick={handleSearch} className="search-button-header">
+          Search
+        </button>
+      </div>
+
+      <div className="header-right">
+        <Link to="/cart" className="header-link">
+          Cart
+        </Link>
+        {userInfo ? (
+          <>
+            <span className="welcome-text">Hi, {userInfo.name}</span>
+            <button className="logout-button" onClick={logoutHandler}>
+              Logout
+            </button>
+          </>
+        ) : (
+          <>
+            <Link to="/login" className="header-link">
+              Login
+            </Link>
+            <Link to="/register" className="header-link">
+              Register
+            </Link>
+          </>
+        )}
+      </div>
     </header>
   );
 };
